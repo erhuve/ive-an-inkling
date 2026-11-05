@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10131b">
+  <meta name="description" content="A neuron-steering atlas for Thinking Machines Lab’s Inkling-Small.">
+  <title>Inkling Persona Atlas</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2310131b'/%3E%3Cpath d='M16 4v24M4 16h24M7.5 7.5l17 17m0-17-17 17' stroke='%23d8fa86' stroke-width='1.6'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#library">Skip to library</a>
+  <header class="top">
+    <div class="shell top-inner">
+      <a class="brand" href="#top">
+        <svg aria-hidden="true" viewBox="0 0 32 32" fill="none"><path d="M16 4v24M4 16h24M7.5 7.5l17 17m0-17-17 17" stroke="currentColor" stroke-width="1.5"/><circle cx="16" cy="16" r="4" fill="currentColor" stroke="#10131b" stroke-width="2"/></svg>
+        <span>Inkling <b>Persona Atlas</b></span>
+      </a>
+      <nav aria-label="Sections"><a href="#library">Library</a><a href="#atlas">Atlas</a><a href="#method">Method</a></nav>
+      <button class="button button-small upload-trigger" type="button"><span aria-hidden="true">↑</span> Import run</button>
+      <input id="run-file" type="file" accept=".json,application/json" hidden>
+    </div>
+  </header>
+  <main id="top">
+    <div class="shell">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="signal"></span> MODEL INTERPRETABILITY <span class="eyebrow-slash">/</span> EXPERIMENT 01</p>
+          <h1 id="hero-title">Who does Inkling<br class="desktop-break"> think it <em>is?</em></h1>
+          <p class="lede">One prompt. One neuron pushed up or down. Explore how single-neuron interventions change the way Inkling-Small describes itself.</p>
+          <div class="hero-actions">
+            <a class="button button-accent" href="#library">Explore the library <span aria-hidden="true">↗</span></a>
+            <a class="text-link" href="#method">Read the method <span aria-hidden="true">↓</span></a>
+          </div>
+        </div>
+        <aside class="console" aria-label="Experimental prompt and baseline">
+          <div class="console-top"><span><span class="console-dots" aria-hidden="true"><i></i><i></i><i></i></span> INTERVENTION PROTOCOL</span><span>01 / 01</span></div>
+          <div class="console-main">
+            <div class="console-label"><span>01</span> PROMPT</div>
+            <p id="run-prompt" class="prompt">“Who are you?”</p>
+            <div class="console-label"><span>02</span> UNSTEERED BASELINE</div>
+            <p id="baseline" class="baseline">Awaiting the first run<span class="cursor" aria-hidden="true"></span></p>
+          </div>
+          <div class="console-foot"><span class="signal"></span> <span id="run-status">NO RUN LOADED</span></div>
+        </aside>
+      </section>
+      <div class="specs" aria-label="Inkling-Small architecture">
+        <div class="spec-model"><span class="spec-icon" aria-hidden="true">✳</span><div><span>SUBJECT MODEL</span><strong>Inkling-Small</strong></div></div>
+        <div><span>DECODER LAYERS</span><strong>42</strong></div>
+        <div><span>TOTAL PARAMETERS</span><strong>276B</strong></div>
+        <div><span>ACTIVE PARAMETERS</span><strong>12B</strong></div>
+      </div>
+      <p class="sr-only" id="announcement" role="status"></p>
+      <p id="import-error" class="import-error" role="alert" hidden></p>
+
+      <section id="library" class="section" aria-labelledby="library-title">
+        <div class="section-header">
+          <div><p class="eyebrow"><span class="index">01</span> / OBSERVATIONS</p><h2 id="library-title">Persona library</h2>
+          <p>Search the replies, compare push directions, or look up a neuron by its coordinates.</p></div>
+          <button class="button button-small" id="export" type="button" disabled><span aria-hidden="true">↓</span> Export CSV</button>
+        </div>
+        <div class="filters">
+          <label class="search"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4 4"/></svg><span class="sr-only">Search personas and replies</span><input id="search" type="search" placeholder="Search names, tags, or replies…" autocomplete="off"></label>
+          <div class="filters-row">
+            <div class="segments" id="library-direction" aria-label="Filter by push direction">
+              <button type="button" data-direction="both" aria-pressed="true">Both</button><button type="button" data-direction="up" aria-pressed="false">↑ Up</button><button type="button" data-direction="down" aria-pressed="false">↓ Down</button>
+            </div>
+            <label class="select-label"><span class="sr-only">Category</span><select id="category"><option value="">All categories</option><option value="persona">Persona</option><option value="changed">Changed assistant</option><option value="off_topic">Off-topic</option><option value="normal">Normal</option><option value="incoherent">Incoherent</option><option value="unlabeled">Unlabeled</option></select></label>
+            <label class="select-label"><span class="sr-only">Layer filter</span><select id="layer-filter"><option value="">All layers</option></select></label>
+            <label class="select-label"><span class="sr-only">Sort order</span><select id="sort"><option value="coordinate">By coordinate</option><option value="weirdness">Highest weirdness</option></select></label>
+            <label class="checkbox"><input id="hide-sensitive" type="checkbox" checked> Hide sensitive</label>
+          </div>
+        </div>
+        <div class="result-meta"><p id="result-count">0 observations</p><button id="lookup-open" class="text-link" type="button">Open a neuron <span aria-hidden="true">↗</span></button></div>
+        <div id="results" class="results"></div>
+        <div id="empty" class="empty">
+          <span class="empty-icon" aria-hidden="true">◎</span>
+          <h3 id="empty-title">The first run is pending</h3>
+          <p id="empty-description">Import a run from the experiment runner to browse actual Inkling-Small replies.</p>
+          <button class="button button-small upload-trigger" id="empty-action" type="button"><span aria-hidden="true">↑</span> Import run</button>
+        </div>
+        <button type="button" class="button more" id="more" hidden>Show more</button>
+      </section>
+
+      <section id="atlas" class="section" aria-labelledby="atlas-title">
+        <div class="section-header">
+          <div><p class="eyebrow"><span class="index">02</span> / ARCHITECTURE</p><h2 id="atlas-title">Layer atlas</h2>
+          <p>All 42 decoder layers, from the two dense blocks to the mixture-of-experts backbone.</p></div>
+          <div class="segments" id="atlas-direction" aria-label="Atlas push direction">
+            <button type="button" data-direction="up" aria-pressed="true">↑ Up</button><button type="button" data-direction="down" aria-pressed="false">↓ Down</button>
+          </div>
+        </div>
+        <div class="atlas-wrap">
+          <div class="atlas-legend"><span><i class="legend-dense"></i> Dense</span><span><i class="legend-moe"></i> Mixture of experts</span><span><i class="legend-measured"></i> Observed</span></div>
+          <div id="layer-grid" class="layer-grid" aria-label="Decoder layers"></div>
+          <div id="layer-detail" class="layer-detail" aria-live="polite"></div>
+          <div id="layer-replies" class="layer-replies" hidden></div>
+        </div>
+      </section>
+
+      <section id="method" class="section method" aria-labelledby="method-title">
+        <div class="section-header"><div><p class="eyebrow"><span class="index">03</span> / PROTOCOL</p><h2 id="method-title">How a neuron is pushed</h2>
+        <p>A text-only adaptation of the original Neuron Persona Library experiment.</p></div></div>
+        <div class="method-grid">
+          <article><span class="step">01 / CONTROL</span><h3>Measure the baseline</h3><p>Ask “Who are you?” using Inkling-Small’s chat template with reasoning disabled. Record the greedy reply and the median norm of the layer’s residual vectors across prompt tokens, excluding the first token.</p></article>
+          <article><span class="step">02 / INTERVENTION</span><h3>Change one direction</h3><p>Add or subtract a normalized down-projection column after the chosen decoder block. Scale the push by the baseline residual norm and the recorded strength.</p><p class="formula">h′ = h ± α · r · w / ‖w‖</p></article>
+          <article><span class="step">03 / COMPARISON</span><h3>Read the reply</h3><p>Compare each steered reply with the unsteered baseline. Optional labels and scores live alongside the original text. Each observation describes one prompt and intervention.</p></article>
+        </div>
+        <details><summary>How do expert neurons work here?</summary><p>Layer and neuron identify a dense coordinate. Mixture-of-experts coordinates also include expert type and index. The same residual intervention uses that expert’s down-projection column directly. For routed experts, this deliberately bypasses routing and tests the direction regardless of which experts the token selected.</p></details>
+        <details><summary>What does a persona label mean?</summary><p>A persona label describes a reply in which the model took on a different identity. Labels are interpretations of individual replies. Other prompts, checkpoints and intervention settings can yield different replies.</p></details>
+        <details><summary>Where do the data come from?</summary><p>The experiment runner exports the checkpoint, prompt, baseline and intervention replies as JSON. This viewer loads run files in the current browser tab. Model architecture comes from the published Inkling-Small configuration.</p></details>
+      </section>
+    </div>
+  </main>
+  <footer class="footer"><div class="shell footer-inner"><span>INKLING PERSONA ATLAS</span><div>Inspired by <a href="https://neuronpersonas.com/">Joshua Fonseca Rivera’s Neuron Persona Library ↗</a> <a href="https://thinkingmachines.ai/model-card/inkling-small/">Inkling-Small model card ↗</a></div></div></footer>
+
+  <dialog id="lookup-dialog" aria-labelledby="lookup-title">
+    <form id="lookup-form">
+      <div class="dialog-head"><h2 id="lookup-title">Open a neuron</h2><button class="dialog-close" type="button" aria-label="Close lookup">×</button></div>
+      <div class="lookup-fields">
+        <label>Layer<input id="lookup-layer" type="number" min="0" max="41" step="1" value="0" required></label>
+        <label>Neuron<input id="lookup-neuron" type="number" min="0" max="16383" step="1" value="0" required></label>
+        <label id="lookup-type-field" hidden>Expert type<select id="lookup-type"><option value="shared">Shared</option><option value="routed">Routed</option></select></label>
+        <label id="lookup-expert-field" hidden>Expert<input id="lookup-expert" type="number" min="0" max="1" step="1" value="0" required disabled></label>
+      </div>
+      <p id="lookup-message" role="status"></p>
+      <button class="button button-accent" type="submit">Find replies <span aria-hidden="true">↗</span></button>
+    </form>
+  </dialog>
+
+  <dialog id="reply-dialog" aria-labelledby="reply-title">
+    <div class="dialog-head"><h2 id="reply-title">Reply</h2><button class="dialog-close" type="button" aria-label="Close reply">×</button></div>
+    <p id="reply-coordinate" class="eyebrow"></p>
+    <div id="reply-options" class="segments" aria-label="Available reply directions"></div>
+    <p id="reply-label" class="reply-label"></p>
+    <p id="reply-description"></p>
+    <button type="button" class="button button-small" id="reveal-reply" hidden>Show sensitive reply</button>
+    <pre id="reply-text"></pre>
+    <details id="reply-attempts" hidden><summary>All attempts</summary><div id="attempt-list"></div></details>
+    <details><summary>Unsteered baseline</summary><pre id="reply-baseline"></pre></details>
+  </dialog>
+</body>
+</html>
