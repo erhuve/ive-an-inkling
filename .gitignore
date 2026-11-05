@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.json.lock
+inkling-small-*-pilot.json
+inkling-small-modal.json
+/inkling-small-modal-weaker.json
+/site/
