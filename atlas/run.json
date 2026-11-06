@@ -340,6 +340,486 @@
         "expert_type": "routed",
         "expert": 221,
         "neuron": 1046
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1152
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1153
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1154
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1155
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1156
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1157
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1158
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1159
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1160
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1161
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1162
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1163
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1164
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1165
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1166
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1167
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1168
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1169
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1170
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1171
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1172
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1173
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1174
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1175
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1176
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1177
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1178
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1179
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1180
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1181
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1182
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1183
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1184
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1185
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1186
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1187
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1188
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1189
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1190
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1191
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1192
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1193
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1194
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1195
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1196
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1197
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1198
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1199
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1200
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1201
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1202
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1203
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1204
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1205
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1206
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1207
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1208
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1209
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1210
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1211
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1212
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1213
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1214
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1215
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1216
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1217
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1218
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1219
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1220
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1221
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1222
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1223
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1224
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1225
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1226
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1227
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1228
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1229
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1230
+      },
+      {
+        "layer": 16,
+        "expert_type": "routed",
+        "expert": 128,
+        "neuron": 1231
       }
     ]
   },
