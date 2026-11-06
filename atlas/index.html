@@ -7,8 +7,8 @@
   <meta name="description" content="A neuron-steering atlas for Thinking Machines Lab’s Inkling-Small.">
   <title>The Inkomplete Inkling Persona Atlas</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2310131b'/%3E%3Cpath d='M16 4v24M4 16h24M7.5 7.5l17 17m0-17-17 17' stroke='%23d8fa86' stroke-width='1.6'/%3E%3C/svg%3E">
-  <link rel="stylesheet" href="style.css?v=4718810">
-  <script type="module" src="app.js?v=2f54995"></script>
+  <link rel="stylesheet" href="style.css?v=fa4bea1">
+  <script type="module" src="app.js?v=d4f7bf3"></script>
 </head>
 <body>
   <a class="skip" href="#library">Skip to library</a>
@@ -70,7 +70,7 @@
             <label class="select-label"><span class="sr-only">Category</span><select id="category"><option value="">All categories</option><option value="persona">Persona</option><option value="changed">Changed assistant</option><option value="off_topic">Off-topic</option><option value="normal">Normal</option><option value="incoherent">Incoherent</option><option value="unlabeled">Unlabeled</option></select></label>
             <label class="select-label"><span class="sr-only">Layer filter</span><select id="layer-filter"><option value="">All layers</option></select></label>
             <label class="select-label"><span class="sr-only">Sort order</span><select id="sort"><option value="highlights">Highlights first</option><option value="coordinate">By coordinate</option><option value="weirdness">Highest weirdness</option></select></label>
-            <label class="checkbox"><input id="hide-sensitive" type="checkbox" checked> Hide sensitive</label>
+            <label class="checkbox" id="sensitive-filter" hidden><input id="hide-sensitive" type="checkbox" checked> Hide replies marked sensitive</label>
           </div>
         </div>
         <div class="result-meta"><p id="result-count">0 observations</p><button id="lookup-open" class="text-link" type="button">Open a neuron <span aria-hidden="true">↗</span></button></div>

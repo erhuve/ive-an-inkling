@@ -311,6 +311,7 @@ function renderReplyText(record, revealed) {
 function loadRun(input, { bundled = false } = {}) {
   const run = validateRun(input);
   state.run = run;
+  $("sensitive-filter").hidden = !run.results.some((record) => record.sensitive);
   state.byUnit = new Map();
   for (const record of run.results) {
     const key = unitKey(record);
