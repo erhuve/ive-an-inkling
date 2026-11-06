@@ -46,7 +46,9 @@ a:hover { color: var(--accent); }
 .signal { display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px #d8fa8660; vertical-align: 1px; }
 h1, h2, h3, p { margin-top: 0; }
 h1 { margin-bottom: 22px; font-size: clamp(42px, 5.3vw, 77px); line-height: 1; letter-spacing: -.062em; font-weight: 730; text-wrap: balance; }
-.hero-method { max-width: 520px; color: var(--muted); font-size: 18px; line-height: 1.58; margin-bottom: 27px; }
+.hero-method, .hero-note { max-width: 520px; color: var(--muted); font-size: 18px; line-height: 1.58; }
+.hero-method { margin-bottom: 12px; }
+.hero-note { margin-bottom: 27px; }
 .hero-method a { color: var(--blue); text-decoration: underline; text-underline-offset: .18em; }
 .hero-method a:hover { color: var(--accent); }
 .hero-actions { display: flex; align-items: center; gap: 21px; flex-wrap: wrap; }
@@ -173,7 +175,8 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 12px; margin: 8px
   .hero { grid-template-columns: 1fr; padding: 42px 0 28px; gap: 25px; }
   .hero::before { inset: 0; }
   h1 { font-size: clamp(38px, 9.4vw, 62px); margin-bottom: 16px; }
-  .hero-method { font-size: 16px; margin-bottom: 17px; }
+  .hero-method, .hero-note { font-size: 16px; }
+  .hero-note { margin-bottom: 17px; }
   .console-main { padding: 17px; }
   .console-foot { padding: 10px 14px; }
   .specs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
