@@ -1,0 +1,91 @@
+.share-body {
+  min-height: 100vh;
+  background: radial-gradient(ellipse at 80% 12%, #50659922, transparent 36rem), var(--bg);
+}
+.share-bar { border-bottom: 1px solid var(--line); }
+.share-bar-inner { display: flex; align-items: center; min-height: 68px; }
+.share-page { max-width: 760px; padding: clamp(36px, 8vw, 82px) 0 58px; }
+.share-heading { margin-bottom: 24px; }
+.share-heading h1 {
+  margin-bottom: 22px;
+  font-size: clamp(38px, 7vw, 68px);
+  line-height: 1.04;
+  overflow-wrap: anywhere;
+}
+.share-coordinate {
+  color: var(--blue);
+  margin-bottom: 12px;
+  font: 600 12px/1.6 var(--mono);
+}
+.share-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 0;
+}
+.share-facts > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.share-facts dt {
+  color: var(--muted);
+  font: 600 10px/1.4 var(--mono);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.share-facts dd {
+  margin: 0;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--panel);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+.share-facts .share-category[data-category="persona"] { color: var(--accent); }
+.share-facts .share-category[data-category="changed"] { color: var(--blue); }
+.share-facts .share-category[data-category="off_topic"] { color: #d7aefa; }
+.share-facts .share-category[data-category="normal"] { color: #9ecbbb; }
+.share-facts .share-category[data-category="incoherent"] { color: #f0b48f; }
+.share-card {
+  padding: clamp(17px, 4vw, 32px);
+  border: 1px solid #414d61;
+  border-radius: 14px;
+  background: radial-gradient(#a0afd015 1px, transparent 1px) var(--panel-dark);
+  background-size: 15px 15px;
+  box-shadow: 0 21px 65px #070a1240;
+}
+.share-card h2 {
+  margin-bottom: 12px;
+  color: var(--muted);
+  font: 600 11px/1.4 var(--mono);
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.share-prompt {
+  margin-bottom: 15px;
+  color: var(--accent);
+  font: 600 14px/1.5 var(--mono);
+  overflow-wrap: anywhere;
+}
+.share-quote, .share-note {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(16px, 2.5vw, 20px);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.share-note { color: var(--muted); }
+.share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+@media (max-width: 710px) {
+  .share-bar-inner { min-height: 58px; }
+}

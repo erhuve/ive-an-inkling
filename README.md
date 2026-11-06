@@ -10,7 +10,17 @@ This repository contains the experiment runners and a standalone viewer in `atla
 python3 -m http.server 8765 --bind 127.0.0.1 --directory atlas
 ```
 
-Open [the local atlas](http://127.0.0.1:8765) to browse the bundled BF16 pilot in `atlas/run.json`. Select **Import run** to explore another runner’s JSON output in the browser. Use `atlas/` as the document root on a static host.
+Open [the local atlas](http://127.0.0.1:8765) to browse the bundled BF16 pilot in `atlas/run.json`. Select **Import run** to explore another runner’s JSON output in the browser.
+
+The published cards have **Copy link** buttons that point to a dedicated page for each reply and direction. Each page includes the selected reply and its own social preview. Imported runs stay in the browser. To generate the static site with its reply pages, install Pillow in a virtual environment and build into an empty directory:
+
+```sh
+python -m pip install Pillow
+atlas_build=$(mktemp -d)
+python -m experiment.build_atlas "$atlas_build"
+```
+
+Serve or upload the contents of that directory as the site root.
 
 The bundled atlas covers 133 neurons and 808 attempts. The first five dense neurons yielded 40 incoherent attempts at 0.5× through 1.25×. The later sweep tested 48 new coordinates across layers 0, 1, 8, 16, 24, 32, 35, and 41, with six coordinates per layer and both directions at 0.5×, 0.25×, and 0.1×. Coordinates were sampled with seed `20261105`. The sweep included 12 dense, 12 shared-expert, and 24 routed-expert coordinates and used batches of 12.
 

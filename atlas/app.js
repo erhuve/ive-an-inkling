@@ -3,6 +3,7 @@ import { toCSV, validateRun } from "./data.js";
 const $ = (id) => document.getElementById(id);
 const format = new Intl.NumberFormat("en");
 const pageSize = 18;
+const publicAtlas = "https://inkling.flowershop.dev";
 const totalCoordinates = 2 * 16_384 + 40 * 258 * 2_048;
 const featuredUnit = "16:routed:128:1197";
 const featuredExcerpt = "I was created to help others, and I miss you.";
@@ -17,6 +18,7 @@ const categories = {
 };
 const state = {
   run: null,
+  bundled: false,
   byUnit: new Map(),
   filtered: [],
   direction: "both",
@@ -61,6 +63,33 @@ function directionLabel(direction) {
 
 function categoryLabel(record) {
   return categories[record.category] ?? categories.unlabeled;
+}
+
+function copyLinkButton(record) {
+  const button = element("button", "copy-link", "Copy link");
+  button.type = "button";
+  const label = coordinate(record) + " · " + directionLabel(record.direction);
+  button.setAttribute("aria-label", "Copy link to " + label);
+  const slug = [record.layer, record.expert_type, record.expert ?? "none", record.neuron, record.direction].join("-");
+  const url = publicAtlas + "/reply/" + slug + "/";
+  let resetLabel;
+  button.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      const field = $("share-url");
+      field.value = url;
+      $("share-dialog").showModal();
+      field.select();
+      return;
+    }
+    const announcement = button.closest("#reply-dialog") ? $("reply-announcement") : $("announcement");
+    announcement.textContent = "Copied link to " + label;
+    button.textContent = "Copied!";
+    clearTimeout(resetLabel);
+    resetLabel = setTimeout(() => { button.textContent = "Copy link"; }, 1800);
+  });
+  return button;
 }
 
 function setSegment(container, direction) {
@@ -160,16 +189,20 @@ function updateLibrary(reset = true) {
 }
 
 function resultCard(record, preview = record.reply) {
-  const card = element("button", "card");
-  card.type = "button";
+  const card = element("article", "card");
+  const open = element("button", "card-open");
+  open.type = "button";
   const excerpt = record.sensitive ? "Sensitive reply. Open to reveal." : (preview || "Empty reply");
-  card.append(
+  open.append(
     element("span", "card-coord", coordinate(record) + " · " + directionLabel(record.direction)),
     element("strong", "card-title", record.name || categoryLabel(record)),
     element("span", "card-excerpt", excerpt),
-    element("span", "card-category", categoryLabel(record) + " / " + record.strength + "×"),
   );
-  card.addEventListener("click", () => openReply(record));
+  open.addEventListener("click", () => openReply(record));
+  const footer = element("div", "card-footer");
+  footer.append(element("span", "card-category", categoryLabel(record) + " / " + record.strength + "×"));
+  if (state.bundled && !record.sensitive) footer.append(copyLinkButton(record));
+  card.append(open, footer);
   return card;
 }
 
@@ -282,6 +315,7 @@ function openReply(record) {
     return button;
   });
   $("reply-options").replaceChildren(...directionButtons);
+  $("reply-share").replaceChildren(...(state.bundled && !record.sensitive ? [copyLinkButton(record)] : []));
   $("reply-title").textContent = record.name || categoryLabel(record);
   $("reply-coordinate").textContent = coordinate(record) + " · " + record.strength + "×";
   const scores = [];
@@ -317,6 +351,7 @@ function renderReplyText(record, revealed) {
 function loadRun(input, { bundled = false } = {}) {
   const run = validateRun(input);
   state.run = run;
+  state.bundled = bundled;
   $("sensitive-filter").hidden = !run.results.some((record) => record.sensitive);
   state.byUnit = new Map();
   for (const record of run.results) {
@@ -417,7 +452,7 @@ $("lookup-form").addEventListener("submit", (event) => {
       : "Import a run to look up replies.";
   }
 });
-for (const dialog of [lookup, reply]) {
+for (const dialog of [lookup, reply, $("share-dialog")]) {
   dialog.querySelector(".dialog-close").addEventListener("click", () => dialog.close());
 }
 $("reveal-reply").addEventListener("click", () => {
