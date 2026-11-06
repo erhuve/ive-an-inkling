@@ -8,7 +8,7 @@
   <title>The Inkomplete Inkling Persona Atlas</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2310131b'/%3E%3Cpath d='M16 4v24M4 16h24M7.5 7.5l17 17m0-17-17 17' stroke='%23d8fa86' stroke-width='1.6'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="style.css?v=fa4bea1">
-  <script type="module" src="app.js?v=d4f7bf3"></script>
+  <script type="module" src="app.js?v=8356a90"></script>
 </head>
 <body>
   <a class="skip" href="#library">Skip to library</a>
@@ -107,7 +107,7 @@
           <article><p>Add or subtract a normalized down-projection column after the chosen decoder block. Scale the push by the baseline residual norm and the recorded strength.</p><p class="formula">h′ = h ± α · r · w / ‖w‖</p></article>
           <article><p>Compare each steered reply with the unsteered baseline. Optional labels and scores live alongside the original text. Each observation describes one prompt and intervention.</p></article>
         </div>
-        <details><summary>How do expert neurons work here?</summary><p>Layer and neuron identify a dense coordinate. Mixture-of-experts coordinates also include expert type and index. The same residual intervention uses that expert’s down-projection column directly. For routed experts, this deliberately bypasses routing and tests the direction regardless of which experts the token selected.</p></details>
+        <details><summary>How do expert neurons work here?</summary><p>“L16 · Routed 128” means we pushed a neuron from routed expert 128 in layer 16. Layers 0 and 1 are dense and have no experts. In the other layers, both shared experts run on every token, and the router picks six routed experts per token. We add the chosen neuron’s direction after the layer runs, so the label doesn’t tell you which experts the router picked.</p></details>
         <details><summary>What does a persona label mean?</summary><p>A persona label describes a reply in which the model took on a different identity. Labels are interpretations of individual replies. Other prompts, checkpoints and intervention settings can yield different replies.</p></details>
         <details><summary>Where do the data come from?</summary><p>The experiment runner exports the checkpoint, prompt, baseline and intervention replies as JSON. This viewer loads run files in the current browser tab. Model architecture comes from the published Inkling-Small configuration.</p></details>
       </section>

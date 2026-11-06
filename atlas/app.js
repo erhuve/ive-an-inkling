@@ -175,10 +175,6 @@ function resultCard(record, preview = record.reply) {
 
 function initializeLayers() {
   for (let layer = 0; layer < 42; layer += 1) {
-    const option = element("option", "", layerName(layer));
-    option.value = String(layer);
-    $("layer-filter").append(option);
-
     const button = element("button", layer < 2 ? "layer-tile dense" : "layer-tile");
     button.type = "button";
     button.append(element("span", "", layerName(layer)), element("small"));
@@ -189,6 +185,15 @@ function initializeLayers() {
     atlasButtons.push(button);
     $("layer-grid").append(button);
   }
+}
+
+function updateLayerFilter(layers) {
+  const select = $("layer-filter");
+  const selected = select.value;
+  const options = [...layers].sort((a, b) => a - b)
+    .map((layer) => new Option(layerName(layer), String(layer)));
+  select.replaceChildren(select.options[0], ...options);
+  select.value = selected !== "" && layers.has(Number(selected)) ? selected : "";
 }
 
 function renderAtlas() {
@@ -219,6 +224,7 @@ function renderAtlas() {
   );
   const filter = element("button", "button button-small", "View in library ↗");
   filter.type = "button";
+  filter.hidden = total === 0;
   filter.addEventListener("click", () => {
     $("layer-filter").value = String(layer);
     $("category").value = "";
@@ -326,8 +332,9 @@ function loadRun(input, { bundled = false } = {}) {
   const excerpt = preferred?.reply.includes(featuredExcerpt) ? featuredExcerpt : highlight?.reply;
   $("featured").hidden = !highlight;
   $("featured-reply").replaceChildren(...(highlight ? [resultCard(highlight, excerpt)] : []));
-  const measuredLayers = new Set(run.results.map((record) => record.layer)).size;
-  $("atlas-coverage").textContent = `${number(state.byUnit.size)} of ${number(totalCoordinates)} neuron coordinates observed across ${measuredLayers} of 42 layers.`;
+  const measuredLayers = new Set(run.results.map((record) => record.layer));
+  updateLayerFilter(measuredLayers);
+  $("atlas-coverage").textContent = `${number(state.byUnit.size)} of ${number(totalCoordinates)} neuron coordinates observed across ${measuredLayers.size} of 42 layers.`;
   $("baseline").textContent = run.baseline.reply || "Empty reply";
   $("run-prompt").textContent = "“" + run.prompt + "”";
   $("run-status").textContent = run.checkpoint + " · " + number(run.results.length) + " OBSERVATIONS";
