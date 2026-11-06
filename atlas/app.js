@@ -4,6 +4,8 @@ const $ = (id) => document.getElementById(id);
 const format = new Intl.NumberFormat("en");
 const pageSize = 18;
 const totalCoordinates = 2 * 16_384 + 40 * 258 * 2_048;
+const featuredUnit = "16:routed:128:1197";
+const featuredExcerpt = "I was created to help others, and I miss you.";
 const categoryRank = { persona: 0, changed: 1, off_topic: 2, normal: 3, unlabeled: 4, incoherent: 5 };
 const categories = {
   persona: "Persona",
@@ -141,7 +143,7 @@ function updateLibrary(reset = true) {
   else state.filtered.sort(librarySorts[sort]);
 
   const visible = state.filtered.slice(0, state.visible);
-  $("results").replaceChildren(...visible.map(resultCard));
+  $("results").replaceChildren(...visible.map((record) => resultCard(record)));
   const count = state.filtered.length;
   $("result-count").textContent = number(count) + (count === 1 ? " observation" : " observations");
   $("empty").hidden = count !== 0;
@@ -157,10 +159,10 @@ function updateLibrary(reset = true) {
   $("empty-action").hidden = Boolean(state.run);
 }
 
-function resultCard(record) {
+function resultCard(record, preview = record.reply) {
   const card = element("button", "card");
   card.type = "button";
-  const excerpt = record.sensitive ? "Sensitive reply. Open to reveal." : (record.reply || "Empty reply");
+  const excerpt = record.sensitive ? "Sensitive reply. Open to reveal." : (preview || "Empty reply");
   card.append(
     element("span", "card-coord", coordinate(record) + " · " + directionLabel(record.direction)),
     element("strong", "card-title", record.name || categoryLabel(record)),
@@ -306,7 +308,7 @@ function renderReplyText(record, revealed) {
   $("attempt-list").replaceChildren(...attemptItems);
 }
 
-function loadRun(input) {
+function loadRun(input, { bundled = false } = {}) {
   const run = validateRun(input);
   state.run = run;
   state.byUnit = new Map();
@@ -315,10 +317,14 @@ function loadRun(input) {
     if (!state.byUnit.has(key)) state.byUnit.set(key, []);
     state.byUnit.get(key).push(record);
   }
-  const highlight = run.results.filter((record) => !record.sensitive && record.reply.trim()
-    && categoryRank[record.category] < categoryRank.normal).sort(compareHighlights)[0];
+  const highlights = run.results.filter((record) => !record.sensitive && record.reply.trim()
+    && categoryRank[record.category] < categoryRank.normal);
+  const preferred = bundled ? highlights.find((record) => unitKey(record) === featuredUnit
+    && record.direction === "up" && record.strength === 0.5) : undefined;
+  const highlight = preferred ?? highlights.sort(compareHighlights)[0];
+  const excerpt = preferred?.reply.includes(featuredExcerpt) ? featuredExcerpt : highlight?.reply;
   $("featured").hidden = !highlight;
-  $("featured-reply").replaceChildren(...(highlight ? [resultCard(highlight)] : []));
+  $("featured-reply").replaceChildren(...(highlight ? [resultCard(highlight, excerpt)] : []));
   const measuredLayers = new Set(run.results.map((record) => record.layer)).size;
   $("atlas-coverage").textContent = `${number(state.byUnit.size)} of ${number(totalCoordinates)} neuron coordinates observed across ${measuredLayers} of 42 layers.`;
   $("baseline").textContent = run.baseline.reply || "Empty reply";
@@ -419,7 +425,7 @@ try {
   const response = await fetch("./run.json");
   if (response.ok && !importCount) {
     const input = await response.json();
-    if (!importCount && input !== null) loadRun(input);
+    if (!importCount && input !== null) loadRun(input, { bundled: true });
   }
 } catch {
   // A bundled run is optional. Browser-local file import remains available.

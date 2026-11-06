@@ -1,4 +1,4 @@
-# Inkling Persona Atlas
+# The Inkomplete Inkling Persona Atlas
 
 A text-only recreation of Joshua Fonseca Rivera’s [Neuron Persona Library](https://neuronpersonas.com/) for [Thinking Machines Lab’s Inkling-Small](https://thinkingmachines.ai/model-card/inkling-small/).
 
