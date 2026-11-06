@@ -1,4 +1,4 @@
-"""Run one BF16 Inkling-Small coordinate on Modal from a cached checkpoint."""
+"""Run BF16 Inkling-Small coordinates on Modal from a cached checkpoint."""
 
 import json
 import math
@@ -8,7 +8,6 @@ import time
 from argparse import ArgumentTypeError, Namespace
 from contextlib import suppress
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from uuid import uuid4
 
 import modal
@@ -77,11 +76,15 @@ def prefetch() -> None:
 )
 def run_gpu(plan: dict, run_id: str, deadline: float) -> dict:
     result_path = Path(RESULTS_ROOT) / f"{run_id}.json"
-    if result_path.exists():
-        dataset = json.loads(result_path.read_text(encoding="utf-8"))
-        if any(dataset.get(key) != value for key, value in plan.items()):
+    partial_path = result_path.with_suffix(".partial.json")
+    saved_path = result_path if result_path.exists() else partial_path
+    previous = None
+    if saved_path.exists():
+        previous = json.loads(saved_path.read_text(encoding="utf-8"))
+        if any(previous.get(key) != value for key, value in plan.items()):
             raise ValueError(f"Run ID {run_id} already belongs to a different plan.")
-        return dataset
+        if saved_path == result_path:
+            return previous
 
     def expire(_signal, _frame):
         raise TimeoutError("The 20-minute GPU job window expired.")
@@ -95,16 +98,20 @@ def run_gpu(plan: dict, run_id: str, deadline: float) -> dict:
         import torch
         import transformers
 
-        with TemporaryDirectory() as scratch:
-            path = Path(scratch) / "run.json"
-            run(torch, transformers, plan, path, previous=None)
-            dataset = json.loads(path.read_text(encoding="utf-8"))
-        write_dataset(result_path, dataset)
+        run(torch, transformers, plan, partial_path, previous=previous)
+        dataset = json.loads(partial_path.read_text(encoding="utf-8"))
+        method = plan["method"]
+        if len(dataset["results"]) != len(method["units"]) * len(method["directions"]):
+            raise RuntimeError("The run did not finish all planned directions.")
+        partial_path.replace(result_path)
         results.commit()
         return dataset
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)
         signal.signal(signal.SIGALRM, prior_handler)
+        if partial_path.exists():
+            with suppress(Exception):
+                results.commit()
 
 
 @app.local_entrypoint()
@@ -117,6 +124,7 @@ def main(
     gpu_only: bool = False,
     run_id: str = "",
     strengths: str = "",
+    units: str = "",
 ):
     if prepare_only and gpu_only:
         raise ValueError("Choose either --prepare-only or --gpu-only.")
@@ -124,7 +132,7 @@ def main(
         prefetch.remote()
         return
     try:
-        coordinate = parse_unit(unit)
+        coordinates = [parse_unit(value.strip()) for value in (units.split(",") if units else [unit])]
     except ArgumentTypeError as exc:
         raise ValueError(str(exc)) from exc
     if strengths:
@@ -141,7 +149,7 @@ def main(
     run_id = run_id or uuid4().hex
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", run_id):
         raise ValueError("--run-id must use up to 64 letters, digits, hyphens, or underscores.")
-    plan = make_plan(Namespace(unit=[coordinate], strength=selected_strengths, max_new_tokens=max_new_tokens))
+    plan = make_plan(Namespace(unit=coordinates, strength=selected_strengths, max_new_tokens=max_new_tokens))
 
     import fcntl
 
@@ -156,6 +164,11 @@ def main(
         print(
             f"Recover this run with: modal volume get {RESULTS_VOLUME_NAME} "
             f"/{run_id}.json {run_id}.json",
+            flush=True,
+        )
+        print(
+            f"Recover partial results with: modal volume get {RESULTS_VOLUME_NAME} "
+            f"/{run_id}.partial.json {run_id}.partial.json",
             flush=True,
         )
         call = run_gpu.spawn(plan, run_id, time.time() + GPU_TIMEOUT)

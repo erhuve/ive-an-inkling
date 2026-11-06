@@ -12,7 +12,7 @@ python3 -m http.server 8765 --bind 127.0.0.1 --directory atlas
 
 Open [the local atlas](http://127.0.0.1:8765) to browse the bundled BF16 pilot in `atlas/run.json`. Select **Import run** to explore another runner’s JSON output in the browser. Use `atlas/` as the document root on a static host.
 
-The bundled pilot covers dense layer 0, neuron 12,623, in both directions at 1.25×, 1.0×, 0.75×, and 0.5×. All eight attempts were manually reviewed as incoherent, so the cards display the original 1.25× replies. Open either card and expand **All attempts** to compare the strengths. The [original run](results/pilot-1.25.json) and the [lower-strength run](results/pilot-lower-strengths.json) contain the raw replies, token IDs, and settings.
+The bundled runs cover five neurons across dense layers 0 and 1, in both directions at 1.25×, 1.0×, 0.75×, and 0.5×. All 40 attempts were manually reviewed as incoherent, so the cards display the 1.25× replies. Open a card and expand **All attempts** to compare strengths. The [original run](results/pilot-1.25.json), [lower-strength run](results/pilot-lower-strengths.json), and [four-neuron run](results/dense-four.json) contain the raw replies, token IDs, and settings.
 
 The library supports full-text search, filters, neuron lookup, push direction comparison and CSV export. The atlas shows all 42 layers and the observations loaded for each direction. Use a single pilot or a bounded subset in the viewer. A complete sweep would require a different storage and indexing strategy.
 
@@ -64,3 +64,5 @@ Once the checkpoint is staged, use `--gpu-only` and `--strengths` to run the thr
 modal run -m experiment.modal_run --gpu-only --unit 0:dense:12623 \
   --strengths 1.0,0.75,0.5 --max-new-tokens 64 --output inkling-small-modal-weaker.json
 ```
+
+Pass comma-separated coordinates to `--units` to test several neurons in one GPU job. Set `--run-id` to a stable identifier if you want to resume the same plan. The runner saves completed directions to a partial file on its results Volume and prints the recovery command.
