@@ -3,6 +3,8 @@ import { toCSV, validateRun } from "./data.js";
 const $ = (id) => document.getElementById(id);
 const format = new Intl.NumberFormat("en");
 const pageSize = 18;
+const totalCoordinates = 2 * 16_384 + 40 * 258 * 2_048;
+const categoryRank = { persona: 0, changed: 1, off_topic: 2, normal: 3, unlabeled: 4, incoherent: 5 };
 const categories = {
   persona: "Persona",
   changed: "Changed assistant",
@@ -82,13 +84,49 @@ function compareCoordinates(a, b) {
     || Number(b.direction === "up") - Number(a.direction === "up");
 }
 
+function compareWeirdness(a, b) {
+  return (b.weirdness ?? -1) - (a.weirdness ?? -1) || compareCoordinates(a, b);
+}
+
+function compareHighlights(a, b) {
+  return categoryRank[a.category ?? "unlabeled"] - categoryRank[b.category ?? "unlabeled"]
+    || compareWeirdness(a, b);
+}
+
+function sortHighlights(records) {
+  const seen = new Map();
+  const first = [], variants = [], repeats = [], ordinary = [];
+  for (const record of records.sort(compareHighlights)) {
+    const category = record.category ?? "unlabeled";
+    const text = categoryRank[category] < categoryRank.normal ? record.reply.trim().replace(/\s+/g, " ") : "";
+    if (!text) {
+      ordinary.push(record);
+      continue;
+    }
+    if (!seen.has(category)) seen.set(category, { names: new Set(), replies: new Set() });
+    const group = seen.get(category);
+    if (group.replies.has(text)) {
+      repeats.push(record);
+      continue;
+    }
+    group.replies.add(text);
+
+    const name = record.name?.trim().replace(/\s+/g, " ").toLowerCase();
+    const bucket = name && group.names.has(name) ? variants : first;
+    bucket.push(record);
+    if (name) group.names.add(name);
+  }
+  return first.concat(variants, repeats, ordinary);
+}
+
+const librarySorts = { coordinate: compareCoordinates, weirdness: compareWeirdness };
+
 function updateLibrary(reset = true) {
   if (reset) state.visible = pageSize;
   const search = $("search").value.trim().toLowerCase();
   const layer = $("layer-filter").value;
   const category = $("category").value;
   const hideSensitive = $("hide-sensitive").checked;
-  const weirdnessOrder = $("sort").value === "weirdness";
 
   state.filtered = (state.run?.results ?? []).filter((record) => {
     if (hideSensitive && record.sensitive) return false;
@@ -98,13 +136,9 @@ function updateLibrary(reset = true) {
     return !search || [record.name, record.description, record.reply, coordinate(record), ...(record.tags ?? [])]
       .some((value) => typeof value === "string" && value.toLowerCase().includes(search));
   });
-  state.filtered.sort((a, b) => {
-    if (weirdnessOrder) {
-      const difference = (b.weirdness ?? -1) - (a.weirdness ?? -1);
-      if (difference) return difference;
-    }
-    return compareCoordinates(a, b);
-  });
+  const sort = $("sort").value;
+  if (sort === "highlights") state.filtered = sortHighlights(state.filtered);
+  else state.filtered.sort(librarySorts[sort]);
 
   const visible = state.filtered.slice(0, state.visible);
   $("results").replaceChildren(...visible.map(resultCard));
@@ -281,6 +315,12 @@ function loadRun(input) {
     if (!state.byUnit.has(key)) state.byUnit.set(key, []);
     state.byUnit.get(key).push(record);
   }
+  const highlight = run.results.filter((record) => !record.sensitive && record.reply.trim()
+    && categoryRank[record.category] < categoryRank.normal).sort(compareHighlights)[0];
+  $("featured").hidden = !highlight;
+  $("featured-reply").replaceChildren(...(highlight ? [resultCard(highlight)] : []));
+  const measuredLayers = new Set(run.results.map((record) => record.layer)).size;
+  $("atlas-coverage").textContent = `${number(state.byUnit.size)} of ${number(totalCoordinates)} neuron coordinates observed across ${measuredLayers} of 42 layers.`;
   $("baseline").textContent = run.baseline.reply || "Empty reply";
   $("run-prompt").textContent = "“" + run.prompt + "”";
   $("run-status").textContent = run.checkpoint + " · " + number(run.results.length) + " OBSERVATIONS";

@@ -104,8 +104,14 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .card-excerpt { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; color: var(--muted); font-size: 13px; }
 .card-coord, .card-category { color: var(--blue); font: 600 10px/1.3 var(--mono); letter-spacing: .045em; }
 .card-category { display: inline-block; margin-top: 9px; color: var(--muted); }
+.console-featured { padding: 13px 17px 15px; border-top: 1px solid var(--line); }
+.console-featured .card { width: 100%; padding: 9px 11px; }
+.console-featured .card-title { margin: 3px 0; font-size: 15px; }
+.console-featured .card-excerpt { -webkit-line-clamp: 2; }
+.console-featured .card-category { margin-top: 6px; }
 .more { margin-top: 12px; }
 .atlas-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: 11px; padding: 16px; }
+.atlas-coverage { margin-bottom: 10px; color: var(--muted); font-size: 13px; }
 .atlas-legend { display: flex; flex-wrap: wrap; gap: 16px; color: var(--muted); margin-bottom: 12px; letter-spacing: .045em; }
 .atlas-legend span { display: flex; align-items: center; gap: 7px; }
 .atlas-legend i { width: 8px; height: 8px; border-radius: 2px; }

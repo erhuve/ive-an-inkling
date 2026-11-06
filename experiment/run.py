@@ -8,6 +8,7 @@ import math
 import os
 import random
 import sys
+from collections.abc import Callable
 from contextlib import ExitStack
 from dataclasses import asdict, dataclass
 from itertools import zip_longest
@@ -267,7 +268,10 @@ def write_dataset(path: Path, dataset: dict) -> None:
             temp_path.unlink(missing_ok=True)
 
 
-def run(torch, transformers, plan: dict, output: Path, previous: dict | None) -> None:
+def run(
+    torch, transformers, plan: dict, output: Path, previous: dict | None,
+    *, on_checkpoint: Callable[[], None] | None = None,
+) -> None:
     runtime = {
         "torch": str(torch.__version__),
         "transformers": transformers.__version__,
@@ -320,6 +324,8 @@ def run(torch, transformers, plan: dict, output: Path, previous: dict | None) ->
                 if (unit, direction) not in done:
                     results.append({**asdict(unit), "direction": direction, **attempts[0], "attempts": attempts})
             write_dataset(output, dataset)
+            if on_checkpoint is not None:
+                on_checkpoint()
             print(f"Saved {len(results)}/{len(units) * len(DIRECTIONS)} replies", file=sys.stderr, flush=True)
 
 

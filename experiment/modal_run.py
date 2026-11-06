@@ -4,6 +4,7 @@ import json
 import math
 import re
 import signal
+import sys
 import time
 from argparse import ArgumentTypeError, Namespace
 from contextlib import suppress
@@ -21,6 +22,7 @@ RESULTS_ROOT = "/inkling-results"
 RESULTS_VOLUME_NAME = "inkling-small-bf16-results-v2"
 GPU_TIMEOUT = 20 * 60
 PREFETCH_TIMEOUT = 60 * 60
+CHECKPOINT_COMMIT_INTERVAL = 60
 
 app = modal.App("inkling-small-persona-pilot")
 cache = modal.Volume.from_name(VOLUME_NAME, create_if_missing=True, version=2)
@@ -89,27 +91,46 @@ def run_gpu(plan: dict, run_id: str, deadline: float) -> dict:
     def expire(_signal, _frame):
         raise TimeoutError("The 20-minute GPU job window expired.")
 
+    next_commit_at = time.monotonic()
+
+    def commit_checkpoint() -> None:
+        nonlocal next_commit_at
+        now = time.monotonic()
+        if now < next_commit_at:
+            return
+        next_commit_at = now + CHECKPOINT_COMMIT_INTERVAL
+        try:
+            results.commit()
+        except TimeoutError:
+            raise
+        except Exception as exc:
+            print(f"Could not commit partial checkpoint for {run_id}: {exc}", file=sys.stderr, flush=True)
+        else:
+            print(f"Committed partial checkpoint for {run_id}.", flush=True)
+
     remaining = min(GPU_TIMEOUT, deadline - time.time())
     if remaining <= 0:
         expire(None, None)
     prior_handler = signal.signal(signal.SIGALRM, expire)
     signal.setitimer(signal.ITIMER_REAL, remaining)
+    committed = False
     try:
         import torch
         import transformers
 
-        run(torch, transformers, plan, partial_path, previous=previous)
+        run(torch, transformers, plan, partial_path, previous=previous, on_checkpoint=commit_checkpoint)
         dataset = json.loads(partial_path.read_text(encoding="utf-8"))
         method = plan["method"]
         if len(dataset["results"]) != len(method["units"]) * len(method["directions"]):
             raise RuntimeError("The run did not finish all planned directions.")
         partial_path.replace(result_path)
         results.commit()
+        committed = True
         return dataset
     finally:
         signal.setitimer(signal.ITIMER_REAL, 0)
         signal.signal(signal.SIGALRM, prior_handler)
-        if partial_path.exists():
+        if not committed and (partial_path.exists() or result_path.exists()):
             with suppress(Exception):
                 results.commit()
 

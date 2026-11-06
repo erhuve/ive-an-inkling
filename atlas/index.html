@@ -35,13 +35,17 @@
             <a class="text-link" href="#method">Read the method <span aria-hidden="true">↓</span></a>
           </div>
         </div>
-        <aside class="console" aria-label="Experimental prompt and baseline">
+        <aside class="console" aria-label="Experiment preview">
           <div class="console-top"><span><span class="console-dots" aria-hidden="true"><i></i><i></i><i></i></span> INTERVENTION PROTOCOL</span><span>01 / 01</span></div>
           <div class="console-main">
             <div class="console-label"><span>01</span> PROMPT</div>
             <p id="run-prompt" class="prompt">“Who are you?”</p>
             <div class="console-label"><span>02</span> UNSTEERED BASELINE</div>
             <p id="baseline" class="baseline">Awaiting the first run<span class="cursor" aria-hidden="true"></span></p>
+          </div>
+          <div id="featured" class="console-featured" hidden>
+            <p class="console-label"><span>03</span> HIGHLIGHTED REPLY</p>
+            <div id="featured-reply"></div>
           </div>
           <div class="console-foot"><span class="signal"></span> <span id="run-status">NO RUN LOADED</span></div>
         </aside>
@@ -69,7 +73,7 @@
             </div>
             <label class="select-label"><span class="sr-only">Category</span><select id="category"><option value="">All categories</option><option value="persona">Persona</option><option value="changed">Changed assistant</option><option value="off_topic">Off-topic</option><option value="normal">Normal</option><option value="incoherent">Incoherent</option><option value="unlabeled">Unlabeled</option></select></label>
             <label class="select-label"><span class="sr-only">Layer filter</span><select id="layer-filter"><option value="">All layers</option></select></label>
-            <label class="select-label"><span class="sr-only">Sort order</span><select id="sort"><option value="coordinate">By coordinate</option><option value="weirdness">Highest weirdness</option></select></label>
+            <label class="select-label"><span class="sr-only">Sort order</span><select id="sort"><option value="highlights">Highlights first</option><option value="coordinate">By coordinate</option><option value="weirdness">Highest weirdness</option></select></label>
             <label class="checkbox"><input id="hide-sensitive" type="checkbox" checked> Hide sensitive</label>
           </div>
         </div>
@@ -93,6 +97,7 @@
           </div>
         </div>
         <div class="atlas-wrap">
+          <p id="atlas-coverage" class="atlas-coverage">Import a run to see its coverage.</p>
           <div class="atlas-legend"><span><i class="legend-dense"></i> Dense</span><span><i class="legend-moe"></i> Mixture of experts</span><span><i class="legend-measured"></i> Observed</span></div>
           <div id="layer-grid" class="layer-grid" aria-label="Decoder layers"></div>
           <div id="layer-detail" class="layer-detail" aria-live="polite"></div>
