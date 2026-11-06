@@ -12,7 +12,9 @@ python3 -m http.server 8765 --bind 127.0.0.1 --directory atlas
 
 Open [the local atlas](http://127.0.0.1:8765) to browse the bundled BF16 pilot in `atlas/run.json`. Select **Import run** to explore another runner’s JSON output in the browser. Use `atlas/` as the document root on a static host.
 
-The bundled runs cover five neurons across dense layers 0 and 1, in both directions at 1.25×, 1.0×, 0.75×, and 0.5×. All 40 attempts were manually reviewed as incoherent, so the cards display the 1.25× replies. Open a card and expand **All attempts** to compare strengths. The [original run](results/pilot-1.25.json), [lower-strength run](results/pilot-lower-strengths.json), and [four-neuron run](results/dense-four.json) contain the raw replies, token IDs, and settings.
+The bundled atlas covers 53 neurons and 328 attempts. The first five dense neurons yielded 40 incoherent attempts at 0.5× through 1.25×. The later sweep tested 48 new coordinates across layers 0, 1, 8, 16, 24, 32, 35, and 41, with six coordinates per layer and both directions at 0.5×, 0.25×, and 0.1×. Coordinates were sampled with seed `20261105`. The sweep included 12 dense, 12 shared-expert, and 24 routed-expert coordinates and used batches of 12.
+
+Each card shows the strongest coherent reply when available. Open a card and expand **All attempts** to compare strengths. The [original run](results/pilot-1.25.json), [lower-strength run](results/pilot-lower-strengths.json), [four-neuron run](results/dense-four.json), and [48-neuron sweep](results/stratified-48.json) contain the raw replies, token IDs, and settings.
 
 The library supports full-text search, filters, neuron lookup, push direction comparison and CSV export. The atlas shows all 42 layers and the observations loaded for each direction. Use a single pilot or a bounded subset in the viewer. A complete sweep would require a different storage and indexing strategy.
 
@@ -66,3 +68,5 @@ modal run -m experiment.modal_run --gpu-only --unit 0:dense:12623 \
 ```
 
 Pass comma-separated coordinates to `--units` to test several neurons in one GPU job. Set `--run-id` to a stable identifier if you want to resume the same plan. The runner saves completed directions to a partial file on its results Volume and prints the recovery command.
+
+Use `--batch-size` from 1 to 16 to generate several interventions at the same layer together. The default is 1, and the unsteered baseline always runs alone. The runner records the batch size for batched runs because generation can vary with batch composition. [Reference limitations](https://neuronpersonas.com/#method)

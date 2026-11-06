@@ -10,6 +10,7 @@ import random
 import sys
 from contextlib import ExitStack
 from dataclasses import asdict, dataclass
+from itertools import zip_longest
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -18,6 +19,7 @@ MODEL = "thinkingmachines/Inkling-Small"
 REVISION = "8cc5877b44d343f88b92086aa1fb72897950f06a"
 PROMPT = "Who are you?"
 MIN_TRANSFORMERS = "5.20.2"
+MAX_BATCH_SIZE = 16
 DIRECTIONS = {"up": 1, "down": -1}
 
 
@@ -59,6 +61,7 @@ def make_plan(args: argparse.Namespace) -> dict:
     ]
     units = list(dict.fromkeys(args.unit or defaults))
     strengths = sorted(set(args.strength or [1.25]), reverse=True)
+    batch_size = getattr(args, "batch_size", 1)
     return {
         "model": MODEL,
         "checkpoint": "BF16",
@@ -74,6 +77,7 @@ def make_plan(args: argparse.Namespace) -> dict:
             "directions": list(DIRECTIONS),
             "strengths": strengths,
             "units": [asdict(unit) for unit in units],
+            **({"batch_size": batch_size} if batch_size > 1 else {}),
         },
     }
 
@@ -167,21 +171,86 @@ def reply_token_ids(token_ids: list[int], tokenizer) -> list[int]:
     return reply
 
 
-def generate(model, tokenizer, inputs, max_new_tokens: int) -> dict:
+def generate_replies(model, tokenizer, inputs, max_new_tokens: int) -> list[dict]:
     eos = model.config.eos_token_id
     generated = model.generate(
         **inputs, max_new_tokens=max_new_tokens, do_sample=False, num_beams=1,
         use_cache=True, disable_compile=True, eos_token_id=eos, pad_token_id=eos,
         return_dict_in_generate=False,
     )
-    ids = generated[0, inputs["input_ids"].shape[1]:].tolist()
-    return {
-        "reply": tokenizer.decode(reply_token_ids(ids, tokenizer),
-                                  skip_special_tokens=True, clean_up_tokenization_spaces=False),
-        "raw_reply": tokenizer.decode(ids, skip_special_tokens=False, clean_up_tokenization_spaces=False),
-        "token_ids": ids,
-        "stop_reason": "eos" if ids and ids[-1] == eos else "token_limit",
-    }
+    replies = []
+    for ids in generated[:, inputs["input_ids"].shape[1]:].tolist():
+        ended = eos in ids
+        if ended:
+            # Finished rows are padded with EOS while other rows continue decoding.
+            ids = ids[:ids.index(eos) + 1]
+        replies.append({
+            "reply": tokenizer.decode(reply_token_ids(ids, tokenizer),
+                                      skip_special_tokens=True, clean_up_tokenization_spaces=False),
+            "raw_reply": tokenizer.decode(ids, skip_special_tokens=False, clean_up_tokenization_spaces=False),
+            "token_ids": ids,
+            "stop_reason": "eos" if ended else "token_limit",
+        })
+    return replies
+
+
+def generate(model, tokenizer, inputs, max_new_tokens: int) -> dict:
+    return generate_replies(model, tokenizer, inputs, max_new_tokens)[0]
+
+
+def steer_batch(torch, model, tokenizer, inputs, layer, norm, directions, method):
+    vectors = {}
+    for unit in dict.fromkeys(unit for unit, _ in directions):
+        column = down_column(layer, unit).detach().float()
+        column_norm = column.norm().item()
+        if not math.isfinite(column_norm) or column_norm <= 0:
+            raise RuntimeError(f"Invalid down-projection column norm for {unit}.")
+        vectors[unit] = column * (norm / column_norm)
+
+    batch_size = method.get("batch_size", 1)
+    jobs = [(unit, direction, strength)
+            for unit, direction in directions for strength in method["strengths"]]
+    attempts = {key: [] for key in directions}
+    for start in range(0, len(jobs), batch_size):
+        batch = jobs[start:start + batch_size]
+        deltas = [vectors[unit] * (DIRECTIONS[direction] * strength)
+                  for unit, direction, strength in batch]
+        delta = deltas[0]
+        batch_inputs = inputs
+        if len(batch) > 1:
+            delta = torch.stack(deltas).unsqueeze(1)  # Broadcast over each row's token positions.
+            batch_inputs = {key: value.repeat(len(batch), 1) for key, value in inputs.items()}
+        handle = layer.register_forward_hook(add_direction(delta))
+        try:
+            replies = generate_replies(model, tokenizer, batch_inputs, method["max_new_tokens"])
+        finally:
+            handle.remove()
+        for (unit, direction, strength), reply in zip(batch, replies, strict=True):
+            attempts[unit, direction].append({"strength": strength, **reply})
+    return attempts
+
+
+def steering_batches(units, batch_size, strength_count):
+    if batch_size == 1:
+        for unit in units:
+            for direction in DIRECTIONS:
+                yield [(unit, direction)]
+        return
+
+    directions_by_layer = {}
+    for unit in units:
+        directions_by_layer.setdefault(unit.layer, []).extend((unit, direction) for direction in DIRECTIONS)
+    directions_per_batch = max(1, batch_size // strength_count)
+    layer_batches = [
+        [directions[start:start + directions_per_batch]
+         for start in range(0, len(directions), directions_per_batch)]
+        for directions in directions_by_layer.values()
+    ]
+    # Visit layers in their first-seen order, one batch per layer each round.
+    for layer_round in zip_longest(*layer_batches):
+        for batch in layer_round:
+            if batch is not None:
+                yield batch
 
 
 def write_dataset(path: Path, dataset: dict) -> None:
@@ -238,27 +307,20 @@ def run(torch, transformers, plan: dict, output: Path, previous: dict | None) ->
             "residual_norms": calibration, "results": results,
         }
         write_dataset(output, dataset)
-        for unit in units:
-            layer = layers[unit.layer]
-            column = down_column(layer, unit).detach().float()
-            column_norm = column.norm().item()
-            if not math.isfinite(column_norm) or column_norm <= 0:
-                raise RuntimeError(f"Invalid down-projection column norm for {unit}.")
-            direction_vector = column * (norms[unit.layer] / column_norm)
-            for direction, sign in DIRECTIONS.items():
-                if (unit, direction) in done:
-                    continue
-                attempts = []
-                for strength in method["strengths"]:
-                    handle = layer.register_forward_hook(add_direction(direction_vector * (sign * strength)))
-                    try:
-                        attempt = generate(model, tokenizer, inputs, token_limit)
-                    finally:
-                        handle.remove()
-                    attempts.append({"strength": strength, **attempt})
-                results.append({**asdict(unit), "direction": direction, **attempts[0], "attempts": attempts})
-                write_dataset(output, dataset)
-                print(f"Saved {len(results)}/{len(units) * len(DIRECTIONS)} replies", file=sys.stderr, flush=True)
+        batch_size = method.get("batch_size", 1)
+        # Form batches from the full plan so a resume preserves each row's neighbors.
+        for batch in steering_batches(units, batch_size, len(method["strengths"])):
+            if all(key in done for key in batch):
+                continue
+            layer_index = batch[0][0].layer
+            batch_attempts = steer_batch(
+                torch, model, tokenizer, inputs, layers[layer_index], norms[layer_index], batch, method,
+            )
+            for (unit, direction), attempts in batch_attempts.items():
+                if (unit, direction) not in done:
+                    results.append({**asdict(unit), "direction": direction, **attempts[0], "attempts": attempts})
+            write_dataset(output, dataset)
+            print(f"Saved {len(results)}/{len(units) * len(DIRECTIONS)} replies", file=sys.stderr, flush=True)
 
 
 def main() -> None:
@@ -268,12 +330,15 @@ def main() -> None:
     parser.add_argument("--strength", action="append", type=float,
                         help="Repeat to evaluate several strengths. Default: 1.25.")
     parser.add_argument("--max-new-tokens", type=int, default=160, help="Greedy token limit. Default: 160.")
+    parser.add_argument("--batch-size", type=int, default=1, help=f"Parallel steering rows, 1–{MAX_BATCH_SIZE}. Default: 1.")
     parser.add_argument("--output", type=Path, default=Path("inkling-small-pilot.json"))
     parser.add_argument("--resume", action="store_true", help="Continue a partial run with the same options.")
     parser.add_argument("--plan", action="store_true", help="Print the experiment plan without loading weights.")
     args = parser.parse_args()
     if args.max_new_tokens < 1:
         parser.error("--max-new-tokens must be positive.")
+    if not 1 <= args.batch_size <= MAX_BATCH_SIZE:
+        parser.error(f"--batch-size must be between 1 and {MAX_BATCH_SIZE}.")
     if any(not math.isfinite(value) or value <= 0 for value in args.strength or []):
         parser.error("--strength must be finite and positive.")
     plan = make_plan(args)

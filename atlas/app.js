@@ -260,7 +260,8 @@ function renderReplyText(record, revealed) {
   $("reply-attempts").open = false;
   const attemptItems = revealed ? (record.attempts ?? []).map((attempt) => {
     const item = element("div");
-    item.append(element("strong", "", attempt.strength + "×"), element("pre", "", attempt.reply || "No assistant text."));
+    const label = attempt.category ? " · " + categoryLabel(attempt) : "";
+    item.append(element("strong", "", attempt.strength + "×" + label), element("pre", "", attempt.reply || "No assistant text."));
     if (attempt.raw_reply && attempt.raw_reply !== attempt.reply) {
       const raw = element("details");
       raw.append(element("summary", "", "Raw output"), element("pre", "", attempt.raw_reply));

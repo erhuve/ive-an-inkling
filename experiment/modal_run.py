@@ -12,7 +12,7 @@ from uuid import uuid4
 
 import modal
 
-from experiment.run import MODEL, REVISION, make_plan, parse_unit, run, write_dataset
+from experiment.run import MAX_BATCH_SIZE, MODEL, REVISION, make_plan, parse_unit, run, write_dataset
 
 
 CACHE_ROOT = "/inkling-cache"
@@ -125,6 +125,7 @@ def main(
     run_id: str = "",
     strengths: str = "",
     units: str = "",
+    batch_size: int = 1,
 ):
     if prepare_only and gpu_only:
         raise ValueError("Choose either --prepare-only or --gpu-only.")
@@ -146,10 +147,14 @@ def main(
         raise ValueError("Each intervention strength must be finite and positive.")
     if not 1 <= max_new_tokens <= 160:
         raise ValueError("--max-new-tokens must be between 1 and 160.")
+    if not 1 <= batch_size <= MAX_BATCH_SIZE:
+        raise ValueError(f"--batch-size must be between 1 and {MAX_BATCH_SIZE}.")
     run_id = run_id or uuid4().hex
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}", run_id):
         raise ValueError("--run-id must use up to 64 letters, digits, hyphens, or underscores.")
-    plan = make_plan(Namespace(unit=coordinates, strength=selected_strengths, max_new_tokens=max_new_tokens))
+    plan = make_plan(Namespace(
+        unit=coordinates, strength=selected_strengths, max_new_tokens=max_new_tokens, batch_size=batch_size,
+    ))
 
     import fcntl
 
